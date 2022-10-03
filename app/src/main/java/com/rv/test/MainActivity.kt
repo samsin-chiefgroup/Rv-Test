@@ -4,8 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.*
 import com.rv.test.databinding.ActivityMainBinding
 import kotlin.random.Random
 
@@ -19,6 +18,15 @@ class MainActivity : AppCompatActivity() {
             listOf(rv1, rv2, rv3, rv4, rv5, rv6)
         }
     }
+    private val adapters: List<MyListAdapter<TestItem, *>> by lazy {
+        (0..5).map {
+            if (it == 0) {
+                Adapter3()
+            } else {
+                Adapter2()
+            }
+        }
+    }
     private val vm = MainViewModel()
     private val map: Map<RecyclerView, RecyclerView.OnScrollListener> by lazy {
         val m = mutableMapOf<RecyclerView, RecyclerView.OnScrollListener>()
@@ -28,14 +36,30 @@ class MainActivity : AppCompatActivity() {
         m
     }
 
+    val diffCallback = DiffCallback()
+
+    private lateinit var differ: AsyncListDiffer<TestItem>
+    private val sharedAdapter = Adapter2()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        val listUpdateCallback = MyListUpdateCallback(ArrayList(adapters))
+        differ = AsyncListDiffer(listUpdateCallback, AsyncDifferConfig.Builder(diffCallback).build())
+        adapters.forEach {
+            it.setDiffer(differ)
+        }
+
+//        val listUpdateCallback = AdapterListUpdateCallback(sharedAdapter)
+//        differ = AsyncListDiffer(listUpdateCallback, AdapterListUpdateCallback.Builder(diffCallback).build())
+//        sharedAdapter.setDiffer(differ)
+
         with(binding) {
-            rvList.forEach {
+            rvList.forEachIndexed { i, it ->
                 it.layoutManager = LinearLayoutManager(this@MainActivity)
                 it.itemAnimator = null
-                it.adapter = Adapter()
+                it.adapter = adapters[i]
                 it.addOnScrollListener(map[it]!!)
                 it.recycledViewPool.setMaxRecycledViews(0, 10)
             }
@@ -64,9 +88,10 @@ class MainActivity : AppCompatActivity() {
 //                rv6.fling(0, speed)
             }
             vm.data.observe(this@MainActivity) { data ->
-                rvList.forEach {
-                    (it.adapter as Adapter).submitList(data.toList())
-                }
+//                rvList.forEach {
+//                    (it.adapter as Adapter).submitList(data.toList())
+//                }
+                (rv6.adapter as MyListAdapter<TestItem, *>).submitList(data.toList())
             }
         }
     }
