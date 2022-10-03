@@ -4,7 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.*
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.rv.test.databinding.ActivityMainBinding
 import kotlin.random.Random
 
@@ -100,6 +103,8 @@ class MainActivity : AppCompatActivity() {
         return object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
+                if (dy == 0) return
+                Log.e("scrolltest", "$recyclerView, $dy")
                 val others = map.entries.filter { recyclerView != it.key }
                 others.forEach { it.key.removeOnScrollListener(it.value) }
                 others.forEach { it.key.scrollBy(0, dy) }

@@ -68,7 +68,7 @@ class Adapter3 :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
         with(holder.binding) {
-            tv.text = "#$position, ${item.id}X"
+            tv.text = "#$position! ${item.id}"
             tv.setBackgroundColor(ContextCompat.getColor(root.context, if (item.isItm) R.color.teal_200 else R.color.white))
         }
     }
